@@ -19,6 +19,18 @@ public class ModernButton extends JButton {
         this(text, Style.PRIMARY);
     }
 
+    public ModernButton(String text, Icon icon) {
+        this(text, icon, Style.PRIMARY);
+    }
+
+    public ModernButton(String text, Icon icon, Style style) {
+        this(text, style);
+        if (icon != null) {
+            setIcon(icon);
+            setIconTextGap(8);
+        }
+    }
+
     public ModernButton(String text, Style style) {
         super(text);
         this.style = style;

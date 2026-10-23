@@ -2,15 +2,17 @@ package com.lms.gui.theme;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.awt.geom.RoundRectangle2D;
+import java.util.function.Consumer;
 
 public class ModernTextField extends JTextField {
     private String placeholder = "";
     private boolean isFocused = false;
-    private int cornerRadius = 10;
+    private int cornerRadius = 8;
 
     public ModernTextField(int columns) {
         super(columns);
@@ -28,7 +30,7 @@ public class ModernTextField extends JTextField {
         setForeground(UITheme.TEXT_MAIN);
         setCaretColor(UITheme.PRIMARY);
         setOpaque(false);
-        setBorder(new EmptyBorder(11, 14, 11, 14));
+        setBorder(new EmptyBorder(10, 14, 10, 14));
 
         addFocusListener(new FocusAdapter() {
             @Override
@@ -50,6 +52,17 @@ public class ModernTextField extends JTextField {
         repaint();
     }
 
+    public void onTextChanged(Consumer<String> callback) {
+        getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) { callback.accept(getText()); }
+            @Override
+            public void removeUpdate(DocumentEvent e) { callback.accept(getText()); }
+            @Override
+            public void changedUpdate(DocumentEvent e) { callback.accept(getText()); }
+        });
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         UITheme.setupAntiAliasing(g);
@@ -58,25 +71,19 @@ public class ModernTextField extends JTextField {
         int w = getWidth();
         int h = getHeight();
 
-        // Subtle focus glow
-        if (isFocused) {
-            g2.setColor(UITheme.withAlpha(UITheme.PRIMARY, 18));
-            g2.fill(new RoundRectangle2D.Float(-2, -2, w + 3, h + 3, cornerRadius + 4, cornerRadius + 4));
-        }
+        // Background
+        g2.setColor(Color.WHITE);
+        g2.fillRoundRect(0, 0, w - 1, h - 1, cornerRadius, cornerRadius);
 
-        // Background fill
-        g2.setColor(isFocused ? Color.WHITE : new Color(249, 250, 251));
-        g2.fill(new RoundRectangle2D.Float(0, 0, w - 1, h - 1, cornerRadius, cornerRadius));
-
-        // Border - thicker and colored when focused
+        // Border
         if (isFocused) {
             g2.setColor(UITheme.PRIMARY);
-            g2.setStroke(new BasicStroke(1.6f));
+            g2.setStroke(new BasicStroke(1.8f));
         } else {
             g2.setColor(UITheme.BORDER);
             g2.setStroke(new BasicStroke(1.0f));
         }
-        g2.draw(new RoundRectangle2D.Float(0.5f, 0.5f, w - 2, h - 2, cornerRadius, cornerRadius));
+        g2.drawRoundRect(0, 0, w - 1, h - 1, cornerRadius, cornerRadius);
 
         super.paintComponent(g);
 

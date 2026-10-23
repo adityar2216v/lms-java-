@@ -7,11 +7,18 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * High-performance, synchronized data store for SmartLearn India LMS.
+ * Handles state management, CRUD transactions, and binary persistence to lms_gui_data.ser.
+ */
 public class DataStore implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 202602L;
     private static final String DATA_FILE = "lms_gui_data.ser";
+    private static final int CURRENT_DATA_VERSION = 202602;
 
     private static DataStore instance;
+
+    private int dataVersion = CURRENT_DATA_VERSION;
 
     private final Map<Integer, User> users = new LinkedHashMap<>();
     private final Map<Integer, Course> courses = new LinkedHashMap<>();
@@ -24,27 +31,35 @@ public class DataStore implements Serializable {
     private final Map<Integer, Doubt> doubts = new LinkedHashMap<>();
     private final Map<Integer, Notice> notices = new LinkedHashMap<>();
     private final Map<Integer, FAQ> faqs = new LinkedHashMap<>();
+    private final Map<Integer, AttendanceRecord> attendance = new LinkedHashMap<>();
 
-    private final AtomicInteger userIdGen = new AtomicInteger(100);
-    private final AtomicInteger courseIdGen = new AtomicInteger(100);
-    private final AtomicInteger enrollmentIdGen = new AtomicInteger(100);
-    private final AtomicInteger videoIdGen = new AtomicInteger(100);
-    private final AtomicInteger assignmentIdGen = new AtomicInteger(100);
-    private final AtomicInteger submissionIdGen = new AtomicInteger(100);
-    private final AtomicInteger examIdGen = new AtomicInteger(100);
-    private final AtomicInteger questionIdGen = new AtomicInteger(100);
-    private final AtomicInteger examResultIdGen = new AtomicInteger(100);
-    private final AtomicInteger doubtIdGen = new AtomicInteger(100);
-    private final AtomicInteger noticeIdGen = new AtomicInteger(100);
-    private final AtomicInteger faqIdGen = new AtomicInteger(100);
+    private final AtomicInteger userIdGen = new AtomicInteger(200);
+    private final AtomicInteger courseIdGen = new AtomicInteger(200);
+    private final AtomicInteger enrollmentIdGen = new AtomicInteger(200);
+    private final AtomicInteger videoIdGen = new AtomicInteger(200);
+    private final AtomicInteger assignmentIdGen = new AtomicInteger(200);
+    private final AtomicInteger submissionIdGen = new AtomicInteger(200);
+    private final AtomicInteger examIdGen = new AtomicInteger(200);
+    private final AtomicInteger questionIdGen = new AtomicInteger(200);
+    private final AtomicInteger examResultIdGen = new AtomicInteger(200);
+    private final AtomicInteger doubtIdGen = new AtomicInteger(200);
+    private final AtomicInteger noticeIdGen = new AtomicInteger(200);
+    private final AtomicInteger faqIdGen = new AtomicInteger(200);
+    private final AtomicInteger attendanceIdGen = new AtomicInteger(200);
 
     private DataStore() {}
 
     public static synchronized DataStore getInstance() {
         if (instance == null) {
             instance = loadFromDisk();
-            if (instance.users.isEmpty()) {
-                instance.seedInitialData();
+            boolean needsSeed = instance.users.isEmpty()
+                    || instance.dataVersion < CURRENT_DATA_VERSION
+                    || instance.users.values().stream().noneMatch(u -> u.getName().contains("Aarav"));
+
+            if (needsSeed) {
+                System.out.println("Seeding SmartLearn India institutional datasets...");
+                instance.clearAndSeedIndianData();
+                instance.dataVersion = CURRENT_DATA_VERSION;
                 instance.saveToDisk();
             }
         }
@@ -57,11 +72,11 @@ public class DataStore implements Serializable {
             try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
                 Object obj = ois.readObject();
                 if (obj instanceof DataStore) {
-                    System.out.println("Loaded LMS data from " + DATA_FILE);
+                    System.out.println("Loaded SmartLearn India data from " + DATA_FILE);
                     return (DataStore) obj;
                 }
             } catch (Exception e) {
-                System.err.println("Could not load from " + DATA_FILE + " (" + e.getMessage() + "). Creating fresh instance.");
+                System.err.println("Notice: Resetting to fresh SmartLearn India dataset (" + e.getMessage() + ")");
             }
         }
         return new DataStore();
@@ -70,149 +85,283 @@ public class DataStore implements Serializable {
     public synchronized void saveToDisk() {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(DATA_FILE))) {
             oos.writeObject(this);
-            System.out.println("Saved LMS data to " + DATA_FILE);
+            System.out.println("Saved SmartLearn India data to " + DATA_FILE);
         } catch (Exception e) {
-            System.err.println("Error saving LMS data: " + e.getMessage());
+            System.err.println("Error saving SmartLearn India data: " + e.getMessage());
         }
     }
 
-    private void seedInitialData() {
-        // 1. Seed Users (Matching Web Application LMS Seed Data)
-        User admin1 = new User(1, "Master Admin", "admin@lms.com", "9876543210", "admin123", User.Role.ADMIN, 1, "Administration");
-        User admin2 = new User(2, "Admin User", "admin@example.com", "9876543200", "password", User.Role.ADMIN, 1, "IT Operations");
-        User faculty1 = new User(3, "Dr. Smith", "faculty@lms.com", "9876543211", "faculty123", User.Role.FACULTY, 1, "Computer Science");
-        User faculty2 = new User(4, "Prof. Sarah Connor", "faculty@example.com", "9876543219", "password", User.Role.FACULTY, 1, "Data Science");
-        User student1 = new User(5, "Alex Johnson", "student@lms.com", "9876543212", "student123", User.Role.STUDENT, 1, "Computer Science");
-        User student2 = new User(6, "Emily Watson", "student@example.com", "9876543213", "password", User.Role.STUDENT, 1, "Software Engineering");
-        User student3 = new User(7, "David Miller", "david@example.com", "9876543214", "password", User.Role.STUDENT, 1, "Information Technology");
+    public synchronized void clearAndSeedIndianData() {
+        users.clear();
+        courses.clear();
+        enrollments.clear();
+        videoLectures.clear();
+        assignments.clear();
+        submissions.clear();
+        exams.clear();
+        examResults.clear();
+        doubts.clear();
+        notices.clear();
+        faqs.clear();
+        attendance.clear();
 
+        // ── 1. Administrators ──────────────────────────────────────────────────
+        User admin1 = new User(1, "Admin User", "admin@smartlearn.in", "9876543210", "admin123", User.Role.ADMIN, 1, "Academic Administration");
+        User adminAlias = new User(2, "Master Administrator", "admin@lms.com", "9876543200", "admin123", User.Role.ADMIN, 1, "Academic Governance");
         users.put(admin1.getId(), admin1);
-        users.put(admin2.getId(), admin2);
-        users.put(faculty1.getId(), faculty1);
-        users.put(faculty2.getId(), faculty2);
-        users.put(student1.getId(), student1);
-        users.put(student2.getId(), student2);
-        users.put(student3.getId(), student3);
+        users.put(adminAlias.getId(), adminAlias);
 
-        // 2. Seed Courses
-        Course c1 = new Course(1, "Advanced Java Programming", "Master Lambdas, Streams, Concurrency, JVM Internals & Collections.", faculty1.getId(), faculty1.getName(), "Computer Science");
-        Course c2 = new Course(2, "Spring Boot Microservices", "Build scalable microservices with REST, Spring Security, JPA & Docker.", faculty1.getId(), faculty1.getName(), "Backend Development");
-        Course c3 = new Course(3, "Modern JavaScript (ES6+)", "Deep dive into Async/Await, Promises, Closures & Modern JS features.", faculty2.getId(), faculty2.getName(), "Web Development");
-        Course c4 = new Course(4, "React JS for Beginners", "Component architectures, Hooks, State management & Routing.", faculty2.getId(), faculty2.getName(), "Frontend Development");
-        Course c5 = new Course(5, "Java Full Stack Development", "Comprehensive end-to-end full stack web architecture with databases.", faculty1.getId(), faculty1.getName(), "Full Stack");
+        // ── 2. Faculty Members ─────────────────────────────────────────────────
+        User fac1 = new User(3, "Dr. Neha Kapoor", "neha.kapoor@smartlearn.in", "9811223344", "faculty123", User.Role.FACULTY, 1, "Computer Science & Engineering");
+        User fac2 = new User(4, "Prof. Vikram Deshmukh", "vikram.deshmukh@smartlearn.in", "9822334455", "faculty123", User.Role.FACULTY, 1, "Data Structures & Algorithms");
+        User fac3 = new User(5, "Dr. Meera Iyer", "meera.iyer@smartlearn.in", "9833445566", "faculty123", User.Role.FACULTY, 1, "Artificial Intelligence & ML");
+        User fac4 = new User(6, "Prof. Rajesh Verma", "rajesh.verma@smartlearn.in", "9844556677", "faculty123", User.Role.FACULTY, 1, "Database Management Systems");
+        User facAlias = new User(7, "Dr. Neha Kapoor (Faculty Login)", "faculty@lms.com", "9811223300", "faculty123", User.Role.FACULTY, 1, "Computer Science & Engineering");
 
-        c1.setEnrolledStudentsCount(3);
-        c2.setEnrolledStudentsCount(2);
-        c3.setEnrolledStudentsCount(1);
-        c4.setEnrolledStudentsCount(2);
-        c5.setEnrolledStudentsCount(2);
+        users.put(fac1.getId(), fac1);
+        users.put(fac2.getId(), fac2);
+        users.put(fac3.getId(), fac3);
+        users.put(fac4.getId(), fac4);
+        users.put(facAlias.getId(), facAlias);
+
+        // ── 3. Students ────────────────────────────────────────────────────────
+        User s1 = new User(8, "Aarav Sharma", "aarav.sharma@smartlearn.in", "9876543211", "student123", User.Role.STUDENT, 1, "Computer Science (Roll: 23CSE101)");
+        User sAlias = new User(9, "Aarav Sharma (Student Login)", "student@lms.com", "9876543212", "student123", User.Role.STUDENT, 1, "Computer Science (Roll: 23CSE101)");
+        User s2 = new User(10, "Ananya Verma", "ananya.verma@smartlearn.in", "9876543213", "student123", User.Role.STUDENT, 1, "Computer Science (Roll: 23CSE102)");
+        User s3 = new User(11, "Rohan Mehta", "rohan.mehta@smartlearn.in", "9876543214", "student123", User.Role.STUDENT, 1, "Information Technology (Roll: 23IT201)");
+        User s4 = new User(12, "Priya Singh", "priya.singh@smartlearn.in", "9876543215", "student123", User.Role.STUDENT, 1, "AI & Data Science (Roll: 23AI301)");
+        User s5 = new User(13, "Aditi Mishra", "aditi.mishra@smartlearn.in", "9876543216", "student123", User.Role.STUDENT, 1, "Computer Science (Roll: 23CSE105)");
+        User s6 = new User(14, "Rahul Gupta", "rahul.gupta@smartlearn.in", "9876543217", "student123", User.Role.STUDENT, 1, "Information Technology (Roll: 23IT205)");
+        User s7 = new User(15, "Sneha Iyer", "sneha.iyer@smartlearn.in", "9876543218", "student123", User.Role.STUDENT, 1, "AI & Data Science (Roll: 23AI304)");
+        User s8 = new User(16, "Arjun Nair", "arjun.nair@smartlearn.in", "9876543219", "student123", User.Role.STUDENT, 1, "Electronics & Comm (Roll: 23ECE401)");
+        User s9 = new User(17, "Kavya Reddy", "kavya.reddy@smartlearn.in", "9876543220", "student123", User.Role.STUDENT, 1, "Computer Science (Roll: 23CSE112)");
+        User s10 = new User(18, "Ishaan Malhotra", "ishaan.malhotra@smartlearn.in", "9876543221", "student123", User.Role.STUDENT, 1, "Information Technology (Roll: 23IT210)");
+
+        users.put(s1.getId(), s1);
+        users.put(sAlias.getId(), sAlias);
+        users.put(s2.getId(), s2);
+        users.put(s3.getId(), s3);
+        users.put(s4.getId(), s4);
+        users.put(s5.getId(), s5);
+        users.put(s6.getId(), s6);
+        users.put(s7.getId(), s7);
+        users.put(s8.getId(), s8);
+        users.put(s9.getId(), s9);
+        users.put(s10.getId(), s10);
+
+        // ── 4. Indian University Course Catalogue ──────────────────────────────
+        Course c1 = new Course(1, "Data Structures and Algorithms in Java", "Master Asymptotic Complexity, Balanced Trees, Graphs, Dynamic Programming & Java Collections.", fac2.getId(), fac2.getName(), "Computer Science");
+        Course c2 = new Course(2, "Object-Oriented Programming with Java", "Deep dive into OOP principles, Lambdas, Streams, Virtual Threads & Concurrency in Java 21.", fac1.getId(), fac1.getName(), "Software Engineering");
+        Course c3 = new Course(3, "Database Management Systems", "Relational Algebra, SQL query optimization, Indexing, B-Trees & ACID Transaction Management.", fac4.getId(), fac4.getName(), "Database Engineering");
+        Course c4 = new Course(4, "Operating Systems", "Process scheduling, Virtual Memory, Deadlock handling, IPC & Linux kernel system calls.", fac1.getId(), fac1.getName(), "Systems Engineering");
+        Course c5 = new Course(5, "Computer Networks", "OSI & TCP/IP architecture, Subnetting, Socket programming, Routing protocols & Network security.", fac4.getId(), fac4.getName(), "Networking");
+        Course c6 = new Course(6, "Artificial Intelligence Fundamentals", "Informed search strategies, Heuristics, Adversarial search, Knowledge Representation & Logic.", fac3.getId(), fac3.getName(), "Artificial Intelligence");
+        Course c7 = new Course(7, "Machine Learning Essentials", "Supervised and Unsupervised Learning, Regression, Classification, SVM, Clustering & Scikit-Learn.", fac3.getId(), fac3.getName(), "Data Science");
+        Course c8 = new Course(8, "Web Development with React", "Modern SPA development, React Hooks, State Management, REST API integration & Tailwind.", fac1.getId(), fac1.getName(), "Web Technologies");
+        Course c9 = new Course(9, "Python Programming", "Functional programming in Python, NumPy, Pandas, Data Wrangling & Automation scripting.", fac2.getId(), fac2.getName(), "Programming");
+        Course c10 = new Course(10, "Software Engineering", "Agile Scrum methodologies, UML design diagrams, CI/CD pipelines & Software Quality Testing.", fac2.getId(), fac2.getName(), "Software Engineering");
+
+        c1.setEnrolledStudentsCount(8);
+        c2.setEnrolledStudentsCount(7);
+        c3.setEnrolledStudentsCount(6);
+        c4.setEnrolledStudentsCount(5);
+        c5.setEnrolledStudentsCount(5);
+        c6.setEnrolledStudentsCount(6);
+        c7.setEnrolledStudentsCount(4);
+        c8.setEnrolledStudentsCount(5);
+        c9.setEnrolledStudentsCount(4);
+        c10.setEnrolledStudentsCount(3);
 
         courses.put(c1.getId(), c1);
         courses.put(c2.getId(), c2);
         courses.put(c3.getId(), c3);
         courses.put(c4.getId(), c4);
         courses.put(c5.getId(), c5);
+        courses.put(c6.getId(), c6);
+        courses.put(c7.getId(), c7);
+        courses.put(c8.getId(), c8);
+        courses.put(c9.getId(), c9);
+        courses.put(c10.getId(), c10);
 
-        // 3. Seed Enrollments
-        Enrollment e1 = new Enrollment(1, student1.getId(), student1.getName(), c1.getId(), c1.getTitle(), 75);
-        Enrollment e2 = new Enrollment(2, student1.getId(), student1.getName(), c2.getId(), c2.getTitle(), 45);
-        Enrollment e3 = new Enrollment(3, student1.getId(), student1.getName(), c5.getId(), c5.getTitle(), 20);
-        Enrollment e4 = new Enrollment(4, student2.getId(), student2.getName(), c1.getId(), c1.getTitle(), 60);
-        Enrollment e5 = new Enrollment(5, student2.getId(), student2.getName(), c4.getId(), c4.getTitle(), 90);
-        Enrollment e6 = new Enrollment(6, student3.getId(), student3.getName(), c3.getId(), c3.getTitle(), 30);
+        // ── 5. Student Enrollments ─────────────────────────────────────────────
+        // Aarav Sharma (ID 8 & 9)
+        enrollments.put(1, new Enrollment(1, s1.getId(), s1.getName(), c1.getId(), c1.getTitle(), 100)); // 100% completed - Ready for Certificate
+        enrollments.put(2, new Enrollment(2, s1.getId(), s1.getName(), c2.getId(), c2.getTitle(), 65));
+        enrollments.put(3, new Enrollment(3, s1.getId(), s1.getName(), c3.getId(), c3.getTitle(), 45));
+        enrollments.put(4, new Enrollment(4, s1.getId(), s1.getName(), c6.getId(), c6.getTitle(), 25));
 
-        enrollments.put(e1.getId(), e1);
-        enrollments.put(e2.getId(), e2);
-        enrollments.put(e3.getId(), e3);
-        enrollments.put(e4.getId(), e4);
-        enrollments.put(e5.getId(), e5);
-        enrollments.put(e6.getId(), e6);
+        // Alias for student@lms.com
+        enrollments.put(5, new Enrollment(5, sAlias.getId(), sAlias.getName(), c1.getId(), c1.getTitle(), 100));
+        enrollments.put(6, new Enrollment(6, sAlias.getId(), sAlias.getName(), c2.getId(), c2.getTitle(), 65));
 
-        // 4. Seed Video Lectures & Notes
-        VideoLecture v1 = new VideoLecture(1, c1.getId(), c1.getTitle(), "1. Introduction to Advanced Java", "Overview of modern Java 17/21 features, records, pattern matching.", "45 mins", "lecture1_intro.mp4", "Java 17 features: Records, sealed classes, pattern matching switch.");
-        VideoLecture v2 = new VideoLecture(2, c1.getId(), c1.getTitle(), "2. Stream API & Functional Interfaces", "Deep dive into map, filter, reduce, collectors, and parallel streams.", "52 mins", "lecture2_streams.mp4", "Streams enable functional programming over collections. Avoid mutating shared state.");
-        VideoLecture v3 = new VideoLecture(3, c1.getId(), c1.getTitle(), "3. Multi-threading & Virtual Threads", "Concurrency utilities, locks, executors, and virtual threads.", "60 mins", "lecture3_concurrency.mp4", "Project Loom virtual threads provide high throughput with lightweight execution.");
-        VideoLecture v4 = new VideoLecture(4, c2.getId(), c2.getTitle(), "1. Spring Boot 3 Core Concepts", "Dependency injection, autowiring, Spring Boot starters.", "48 mins", "lecture1_springboot.mp4", "Spring IoC container manages bean lifecycle and dependency injection automatically.");
-        VideoLecture v5 = new VideoLecture(5, c2.getId(), c2.getTitle(), "2. Spring Data JPA & Hibernate", "Entities, repositories, custom JPQL queries, schema migrations.", "55 mins", "lecture2_jpa.mp4", "HikariCP pool management, lazy vs eager fetching, transaction boundaries.");
+        // Other Students
+        enrollments.put(7, new Enrollment(7, s2.getId(), s2.getName(), c1.getId(), c1.getTitle(), 85));
+        enrollments.put(8, new Enrollment(8, s2.getId(), s2.getName(), c6.getId(), c6.getTitle(), 60));
+        enrollments.put(9, new Enrollment(9, s3.getId(), s3.getName(), c3.getId(), c3.getTitle(), 70));
+        enrollments.put(10, new Enrollment(10, s3.getId(), s3.getName(), c5.getId(), c5.getTitle(), 40));
+        enrollments.put(11, new Enrollment(11, s4.getId(), s4.getName(), c6.getId(), c6.getTitle(), 90));
+        enrollments.put(12, new Enrollment(12, s4.getId(), s4.getName(), c7.getId(), c7.getTitle(), 80));
 
-        videoLectures.put(v1.getId(), v1);
-        videoLectures.put(v2.getId(), v2);
-        videoLectures.put(v3.getId(), v3);
-        videoLectures.put(v4.getId(), v4);
-        videoLectures.put(v5.getId(), v5);
+        // ── 6. Video Lectures & Study Notes ────────────────────────────────────
+        videoLectures.put(1, new VideoLecture(1, c1.getId(), c1.getTitle(),
+                "Module 1: Asymptotic Complexity & Java Collections Framework",
+                "Deep analysis of Big-O, Big-Omega notation. Internal architecture of ArrayList vs LinkedList.",
+                "45 mins", "dsa_mod1_complexity.mp4",
+                "Key Notes:\n- Big-O denotes worst-case upper bound.\n- ArrayList uses dynamic array doubling (amortized O(1)).\n- LinkedList requires node pointers, incurring cache locality overhead."));
 
-        // 5. Seed Assignments
-        Assignment a1 = new Assignment(1, c1.getId(), c1.getTitle(), "Java OOPs & Stream Architecture", "Implement an immutable banking ledger system utilizing Java Streams, Records, and Lambdas.", LocalDate.now().plusDays(5), 100, faculty1.getId(), faculty1.getName());
-        Assignment a2 = new Assignment(2, c2.getId(), c2.getTitle(), "Spring Data JPA Microservice", "Design a RESTful controller with JPA repositories, DTO validation, and error handlers.", LocalDate.now().plusDays(7), 50, faculty1.getId(), faculty1.getName());
-        Assignment a3 = new Assignment(3, c3.getId(), c3.getTitle(), "Modern JavaScript Async Pipeline", "Construct an asynchronous pipeline handling external API fetch and retry logic.", LocalDate.now().plusDays(3), 50, faculty2.getId(), faculty2.getName());
+        videoLectures.put(2, new VideoLecture(2, c1.getId(), c1.getTitle(),
+                "Module 2: Self-Balancing BSTs & AVL Tree Rotations",
+                "Understanding balance factors, LL, RR, LR, and RL rotations for strict O(log n) performance.",
+                "52 mins", "dsa_mod2_avl_trees.mp4",
+                "Key Notes:\n- Balance Factor = height(left) - height(right).\n- AVL trees ensure height <= 1.44 log2(n).\n- Single rotations (LL/RR) and double rotations (LR/RL) re-balance after insertion."));
+
+        videoLectures.put(3, new VideoLecture(3, c1.getId(), c1.getTitle(),
+                "Module 3: Graph Traversal & Shortest Path (Dijkstra & BFS)",
+                "Adjacency list representation, Breadth First Search, and PriorityQueue-backed Dijkstra algorithm.",
+                "58 mins", "dsa_mod3_graphs.mp4",
+                "Key Notes:\n- BFS finds shortest path in unweighted graphs in O(V + E).\n- Dijkstra calculates shortest paths from single source with non-negative edge weights in O((V + E) log V)."));
+
+        videoLectures.put(4, new VideoLecture(4, c2.getId(), c2.getTitle(),
+                "Module 1: Functional Programming & Stream Pipeline in Java 21",
+                "Intermediate operations (filter, map, flatMap) vs terminal operations (collect, reduce, count).",
+                "48 mins", "java_mod1_streams.mp4",
+                "Key Notes:\n- Streams are lazy: computations only execute when terminal operation is triggered.\n- Prefer immutable data structures using Java records."));
+
+        videoLectures.put(5, new VideoLecture(5, c3.getId(), c3.getTitle(),
+                "Module 1: Relational Normalization & BCNF Decomposition",
+                "Functional dependencies, 1NF, 2NF, 3NF, and Boyce-Codd Normal Form loss-less joins.",
+                "50 mins", "dbms_mod1_normalization.mp4",
+                "Key Notes:\n- BCNF requires that for every functional dependency X -> Y, X must be a superkey.\n- Prevents update, insertion, and deletion anomalies."));
+
+        // ── 7. Assignments & Homework ──────────────────────────────────────────
+        Assignment a1 = new Assignment(1, c1.getId(), c1.getTitle(),
+                "Implementation of Self-Balancing AVL Tree with Deletion",
+                "Write a complete generic Java class AVLTree<T extends Comparable<T>> implementing insert, delete, and inorder traversal with rotation methods.",
+                LocalDate.now().plusDays(5), 100, fac2.getId(), fac2.getName());
+
+        Assignment a2 = new Assignment(2, c2.getId(), c2.getTitle(),
+                "Multi-Threaded Banking System with Java Virtual Threads",
+                "Construct a simulated bank transaction engine handling concurrent deposits and transfers with proper mutex synchronizations.",
+                LocalDate.now().plusDays(7), 100, fac1.getId(), fac1.getName());
+
+        Assignment a3 = new Assignment(3, c3.getId(), c3.getTitle(),
+                "Relational Schema Design & ACID Transaction Processing",
+                "Design a normalized BCNF schema for a university examination portal and provide optimized SQL queries.",
+                LocalDate.now().plusDays(3), 50, fac4.getId(), fac4.getName());
 
         assignments.put(a1.getId(), a1);
         assignments.put(a2.getId(), a2);
         assignments.put(a3.getId(), a3);
 
-        // 6. Seed Assignment Submissions
-        AssignmentSubmission s1 = new AssignmentSubmission(1, a1.getId(), a1.getTitle(), c1.getId(), c1.getTitle(), student1.getId(), student1.getName(), "public record Transaction(String id, double amount, LocalDateTime timestamp) {}\n// Complete ledger implementation with parallel streams.");
-        s1.setMarks(92);
-        s1.setFeedback("Exceptional use of Java Records and functional streams. Clean code architecture!");
-        s1.setStatus(AssignmentSubmission.Status.GRADED);
+        // ── 8. Assignment Submissions ──────────────────────────────────────────
+        AssignmentSubmission sub1 = new AssignmentSubmission(1, a1.getId(), a1.getTitle(), c1.getId(), c1.getTitle(),
+                s1.getId(), s1.getName(),
+                "// AVL Tree Implementation in Java\npublic class AVLTree<T extends Comparable<T>> {\n    private class Node { T key; int height; Node left, right; }\n    // Implemented rightRotate, leftRotate, and rebalance after recursive delete.");
+        sub1.setMarks(96);
+        sub1.setFeedback("Outstanding solution, Aarav! Proper balance factor calculations and clean generic comparison.");
+        sub1.setStatus(AssignmentSubmission.Status.GRADED);
 
-        AssignmentSubmission s2 = new AssignmentSubmission(2, a2.getId(), a2.getTitle(), c2.getId(), c2.getTitle(), student1.getId(), student1.getName(), "@RestController\n@RequestMapping(\"/api/v1/students\")\npublic class StudentController { ... }");
-        s2.setStatus(AssignmentSubmission.Status.SUBMITTED);
+        AssignmentSubmission sub2 = new AssignmentSubmission(2, a2.getId(), a2.getTitle(), c2.getId(), c2.getTitle(),
+                s1.getId(), s1.getName(),
+                "// Virtual Threads Banking Engine\nExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();\n// Synchronized account ledger with atomic balance transfers.");
+        sub2.setStatus(AssignmentSubmission.Status.SUBMITTED);
 
-        submissions.put(s1.getId(), s1);
-        submissions.put(s2.getId(), s2);
+        submissions.put(sub1.getId(), sub1);
+        submissions.put(sub2.getId(), sub2);
 
-        // 7. Seed Exams & Questions
-        Exam exam1 = new Exam(1, c1.getId(), c1.getTitle(), "Midterm Examination 2026", 45, 40, faculty1.getId(), faculty1.getName(), "Live");
-        
-        Question q1 = new Question(1, 1, "Which collection class guarantees unique elements and does not maintain order?", 10, 
-                Arrays.asList("ArrayList", "LinkedList", "HashSet", "Vector"), 2);
-        Question q2 = new Question(2, 1, "Which Java feature introduced in Java 16 enables immutable data-carrier classes?", 10,
-                Arrays.asList("Interfaces", "Records", "Enums", "Abstract Classes"), 1);
-        Question q3 = new Question(3, 1, "What does JVM stand for?", 10,
-                Arrays.asList("Java Virtual Machine", "Java Visual Manager", "Joint Variable Method", "Java Verified Memory"), 0);
-        Question q4 = new Question(4, 1, "Which keyword prevents method overriding and class inheritance?", 10,
-                Arrays.asList("static", "abstract", "final", "volatile"), 2);
+        // ── 9. Timed MCQ Quizzes & Assessments ─────────────────────────────────
+        Exam exam1 = new Exam(1, c1.getId(), c1.getTitle(), "DSA Midterm Assessment 2026", 45, 40, fac2.getId(), fac2.getName(), "Live");
+
+        Question q1 = new Question(1, 1, "What is the worst-case time complexity of searching in a Balanced Binary Search Tree (AVL Tree)?", 10,
+                Arrays.asList("O(1)", "O(n)", "O(log n)", "O(n log n)"), 2);
+        Question q2 = new Question(2, 1, "Which data structure is optimal to implement Dijkstra's Single Source Shortest Path algorithm?", 10,
+                Arrays.asList("Binary Search Tree", "Min-Heap / PriorityQueue", "Stack", "Circular Queue"), 1);
+        Question q3 = new Question(3, 1, "Which collection class in java.util guarantees unique elements and sorts by natural order?", 10,
+                Arrays.asList("HashSet", "TreeSet", "LinkedHashSet", "PriorityQueue"), 1);
+        Question q4 = new Question(4, 1, "What is the space complexity of Depth First Search (DFS) on a tree of maximum height h?", 10,
+                Arrays.asList("O(1)", "O(h)", "O(2^h)", "O(n^2)"), 1);
 
         exam1.getQuestions().addAll(Arrays.asList(q1, q2, q3, q4));
         exams.put(exam1.getId(), exam1);
 
-        Exam exam2 = new Exam(2, c2.getId(), c2.getTitle(), "Spring Boot Core Assessment", 30, 20, faculty1.getId(), faculty1.getName(), "Live");
-        Question eq1 = new Question(5, 2, "Which annotation marks a class as a Spring Boot auto-configuration source?", 10,
-                Arrays.asList("@SpringBootApplication", "@Service", "@Repository", "@Entity"), 0);
-        Question eq2 = new Question(6, 2, "Default embedded servlet container in Spring Boot is:", 10,
-                Arrays.asList("Jetty", "Undertow", "Apache Tomcat", "GlassFish"), 2);
+        Exam exam2 = new Exam(2, c2.getId(), c2.getTitle(), "Java OOPs & JVM Architecture Assessment", 30, 20, fac1.getId(), fac1.getName(), "Live");
+        Question eq1 = new Question(5, 2, "Which Java 16+ feature introduces immutable, transparent data-carrier classes?", 10,
+                Arrays.asList("Interfaces", "Records", "Enums", "Abstract Classes"), 1);
+        Question eq2 = new Question(6, 2, "Which garbage collector in modern HotSpot JVM is designed for ultra-low latency sub-millisecond pauses?", 10,
+                Arrays.asList("Serial GC", "Parallel GC", "ZGC (Z Garbage Collector)", "CMS GC"), 2);
         exam2.getQuestions().addAll(Arrays.asList(eq1, eq2));
         exams.put(exam2.getId(), exam2);
 
-        // 8. Seed Exam Results
-        ExamResult res1 = new ExamResult(1, exam1.getId(), exam1.getTitle(), c1.getId(), c1.getTitle(), student2.getId(), student2.getName(), 30, 40);
+        // ── 10. Exam Results ───────────────────────────────────────────────────
+        ExamResult res1 = new ExamResult(1, exam1.getId(), exam1.getTitle(), c1.getId(), c1.getTitle(), s1.getId(), s1.getName(), 40, 40);
+        ExamResult res2 = new ExamResult(2, exam1.getId(), exam1.getTitle(), c1.getId(), c1.getTitle(), s2.getId(), s2.getName(), 30, 40);
         examResults.put(res1.getId(), res1);
+        examResults.put(res2.getId(), res2);
 
-        // 9. Seed Doubts / Q&A
-        Doubt d1 = new Doubt(1, c1.getId(), c1.getTitle(), student1.getId(), student1.getName(), "Could you please explain when to use Parallel Streams vs Normal Sequential Streams?");
-        d1.setAnswer("Use parallel streams only when processing large CPU-intensive datasets where the cost of thread splitting and joining is lower than the serial execution time.");
-        d1.setFacultyName(faculty1.getName());
+        // ── 11. Doubts & Mentorship Q&A ────────────────────────────────────────
+        Doubt d1 = new Doubt(1, c1.getId(), c1.getTitle(), s1.getId(), s1.getName(),
+                "In Java PriorityQueue, how do we implement a custom comparator for a Max-Heap instead of the default Min-Heap?");
+        d1.setAnswer("You can pass Collections.reverseOrder() or a custom lambda comparator (a, b) -> Integer.compare(b, a) to the PriorityQueue constructor.");
+        d1.setFacultyName(fac2.getName());
         d1.setStatus(Doubt.Status.RESOLVED);
 
-        Doubt d2 = new Doubt(2, c2.getId(), c2.getTitle(), student1.getId(), student1.getName(), "Why is field injection with @Autowired discouraged compared to constructor injection?");
+        Doubt d2 = new Doubt(2, c3.getId(), c3.getTitle(), s1.getId(), s1.getName(),
+                "Could you please explain why BCNF is considered strictly stronger than 3NF, and when a 3NF relation is not in BCNF?");
+        d2.setAnswer("A relation is in 3NF if for every FD X -> A, either X is a superkey or A is a prime attribute. BCNF removes the prime attribute relaxation—X must be a superkey in all cases.");
+        d2.setFacultyName(fac4.getName());
+        d2.setStatus(Doubt.Status.RESOLVED);
+
+        Doubt d3 = new Doubt(3, c2.getId(), c2.getTitle(), s2.getId(), s2.getName(),
+                "When should we prefer Virtual Threads over standard Platform Threads in Java 21?");
         doubts.put(d1.getId(), d1);
         doubts.put(d2.getId(), d2);
+        doubts.put(d3.getId(), d3);
 
-        // 10. Seed Campus Notices
-        Notice n1 = new Notice(1, "Final Semester Examination Timetable Released", "The university examination branch has released the final timetable for odd semester examinations. Check the portal for your batch schedule.", "Academic", "Examinations Dean", true);
-        Notice n2 = new Notice(2, "Annual Tech Innovation Hackathon 2026", "Registrations are now open for the 36-hour National Coding Hackathon with prize pool of $5,000. Team up with classmates!", "Event", "Student Affairs", true);
-        Notice n3 = new Notice(3, "Campus Placement Drive: Top Tier Tech Companies", "Major enterprise software companies will be conducting placement tests on campus starting next Monday. Keep resumes updated.", "Placement", "Training & Placement Cell", false);
+        // ── 12. Official Campus Notices ────────────────────────────────────────
+        Notice n1 = new Notice(1, "Odd Semester End-Term Examinations 2026-27 Schedule",
+                "The Office of the Controller of Examinations has published the final datesheet for all B.Tech and M.Tech departments. Practical lab vivas commence from 15th Nov 2026.",
+                "Academic", "Controller of Examinations", true);
+
+        Notice n2 = new Notice(2, "AICTE Smart India Hackathon (SIH 2026) Registrations Open",
+                "Nominations are invited from student teams for the National Smart India Hackathon 2026. Top college teams will receive ₹1,00,000 innovation grant.",
+                "National Initiative", "Dean of Student Affairs", true);
+
+        Notice n3 = new Notice(3, "Campus Recruitment Drive: TCS, Infosys & Google India",
+                "Pre-placement talks and technical coding aptitude assessments will be held in the Central Auditorium on Monday at 09:30 AM IST. Formal attire mandatory.",
+                "Placement", "Training & Placement Cell", true);
+
+        Notice n4 = new Notice(4, "Technical Paper Presentation & Project Expo — Technovision 2026",
+                "Submit your original research papers on Cloud Computing, AI and IoT to the IEEE Student Branch by 5th Nov 2026.",
+                "Event", "IEEE Student Branch", false);
 
         notices.put(n1.getId(), n1);
         notices.put(n2.getId(), n2);
         notices.put(n3.getId(), n3);
+        notices.put(n4.getId(), n4);
 
-        // 11. Seed FAQs
-        faqs.put(1, new FAQ(1, "How do I enroll in a new course?", "Go to the 'Course Catalog' tab, browse the available courses, and click the 'Enroll' button.", "Enrollment"));
-        faqs.put(2, new FAQ(2, "How are assignment submissions graded?", "Your course instructor reviews submitted solutions, assigns scores, and writes personalized feedback in the portal.", "Assignments"));
-        faqs.put(3, new FAQ(3, "Can I retake an exam after submission?", "Exam attempts are automatically evaluated and recorded upon submission. Retake policy depends on the instructor's discretion.", "Exams"));
-        faqs.put(4, new FAQ(4, "How do I ask doubts directly to faculty?", "Navigate to the 'Ask Doubts' section, choose your course, and post your inquiry. The instructor is notified instantly.", "Communication"));
+        // ── 13. Institutional FAQs ─────────────────────────────────────────────
+        faqs.put(1, new FAQ(1, "How do I enroll in a new university course?", "Navigate to the 'Course Catalog' tab, browse the available curriculum subjects, and click the 'Enroll in Selected Course' button.", "Enrollment"));
+        faqs.put(2, new FAQ(2, "How is course attendance monitored?", "Faculty members record session attendance daily. You can inspect your real-time attendance percentage under the 'Attendance & Academics' tab. AICTE requires minimum 75% attendance.", "Attendance"));
+        faqs.put(3, new FAQ(3, "How do I claim my Verified Certificate of Excellence?", "Once your course completion progress reaches 100%, an authenticated 'Generate Certificate' button is enabled with an official credential hash.", "Certification"));
+        faqs.put(4, new FAQ(4, "How are assignment submissions evaluated?", "Course faculty review your code/solutions, assign numeric scores, and deliver personalized constructive feedback within 48 hours of submission.", "Grading"));
+
+        // ── 14. Seed Academic Attendance Records ───────────────────────────────
+        seedAttendanceRecords(s1.getId(), s1.getName(), c1.getId(), c1.getTitle());
+        seedAttendanceRecords(s1.getId(), s1.getName(), c2.getId(), c2.getTitle());
+        seedAttendanceRecords(sAlias.getId(), sAlias.getName(), c1.getId(), c1.getTitle());
+        seedAttendanceRecords(sAlias.getId(), sAlias.getName(), c2.getId(), c2.getTitle());
+        seedAttendanceRecords(s2.getId(), s2.getName(), c1.getId(), c1.getTitle());
+    }
+
+    private void seedAttendanceRecords(int studentId, String studentName, int courseId, String courseTitle) {
+        LocalDate start = LocalDate.now().minusWeeks(4);
+        for (int i = 0; i < 16; i++) {
+            LocalDate d = start.plusDays(i * 2);
+            String status = (i == 4 || i == 11) ? "ABSENT" : "PRESENT";
+            int id = attendanceIdGen.incrementAndGet();
+            AttendanceRecord rec = new AttendanceRecord(id, studentId, studentName, courseId, courseTitle, d, status, "Lecture Session " + (i + 1));
+            attendance.put(id, rec);
+        }
     }
 
     // ── Authentication ────────────────────────────────────────────────────────
@@ -262,7 +411,7 @@ public class DataStore implements Serializable {
     // ── Course Management ──────────────────────────────────────────────────────
     public synchronized List<Course> getAllCourses() { return new ArrayList<>(courses.values()); }
     public synchronized Course getCourseById(int id) { return courses.get(id); }
-    
+
     public synchronized Course addCourse(String title, String description, int instructorId, String instructorName, String category) {
         int id = courseIdGen.incrementAndGet();
         Course c = new Course(id, title, description, instructorId, instructorName, category);
@@ -286,7 +435,7 @@ public class DataStore implements Serializable {
 
     // ── Enrollments ────────────────────────────────────────────────────────────
     public synchronized List<Enrollment> getAllEnrollments() { return new ArrayList<>(enrollments.values()); }
-    
+
     public synchronized List<Enrollment> getEnrollmentsByStudent(int studentId) {
         List<Enrollment> list = new ArrayList<>();
         for (Enrollment e : enrollments.values()) {
@@ -329,7 +478,7 @@ public class DataStore implements Serializable {
 
     // ── Video Lectures ─────────────────────────────────────────────────────────
     public synchronized List<VideoLecture> getAllLectures() { return new ArrayList<>(videoLectures.values()); }
-    
+
     public synchronized List<VideoLecture> getLecturesByCourse(int courseId) {
         List<VideoLecture> list = new ArrayList<>();
         for (VideoLecture v : videoLectures.values()) {
@@ -472,6 +621,45 @@ public class DataStore implements Serializable {
         examResults.put(id, r);
         saveToDisk();
         return r;
+    }
+
+    // ── Attendance ─────────────────────────────────────────────────────────────
+    public synchronized List<AttendanceRecord> getAllAttendance() { return new ArrayList<>(attendance.values()); }
+
+    public synchronized List<AttendanceRecord> getAttendanceByStudent(int studentId) {
+        List<AttendanceRecord> list = new ArrayList<>();
+        for (AttendanceRecord r : attendance.values()) {
+            if (r.getStudentId() == studentId) list.add(r);
+        }
+        return list;
+    }
+
+    public synchronized List<AttendanceRecord> getAttendanceByCourse(int courseId) {
+        List<AttendanceRecord> list = new ArrayList<>();
+        for (AttendanceRecord r : attendance.values()) {
+            if (r.getCourseId() == courseId) list.add(r);
+        }
+        return list;
+    }
+
+    public synchronized AttendanceRecord markAttendance(int studentId, String studentName, int courseId, String courseTitle, LocalDate date, String status, String topic) {
+        int id = attendanceIdGen.incrementAndGet();
+        AttendanceRecord r = new AttendanceRecord(id, studentId, studentName, courseId, courseTitle, date, status, topic);
+        attendance.put(id, r);
+        saveToDisk();
+        return r;
+    }
+
+    public synchronized double getAttendancePercentage(int studentId, int courseId) {
+        List<AttendanceRecord> list = new ArrayList<>();
+        for (AttendanceRecord r : attendance.values()) {
+            if (r.getStudentId() == studentId && r.getCourseId() == courseId) {
+                list.add(r);
+            }
+        }
+        if (list.isEmpty()) return 100.0;
+        long present = list.stream().filter(AttendanceRecord::isPresent).count();
+        return (present * 100.0) / list.size();
     }
 
     // ── Doubts / Q&A ───────────────────────────────────────────────────────────

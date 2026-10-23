@@ -48,25 +48,27 @@ public class ExamTakingDialog extends JDialog {
         setLayout(new BorderLayout());
 
         // Header Panel with Title and Timer
-        JPanel headerPanel = new JPanel(new BorderLayout(10, 10));
+        JPanel headerPanel = new JPanel(new BorderLayout(14, 10));
         headerPanel.setBackground(UITheme.SIDEBAR_BG);
         headerPanel.setBorder(new EmptyBorder(16, 24, 16, 24));
 
         JPanel titleGrp = new JPanel(new GridLayout(2, 1, 2, 2));
         titleGrp.setOpaque(false);
-        JLabel titleLbl = new JLabel("📝 " + exam.getTitle());
+        JLabel titleLbl = new JLabel(exam.getTitle(), new VectorIcon(VectorIcon.Type.EXAMS, 20, Color.WHITE), SwingConstants.LEFT);
         titleLbl.setFont(UITheme.FONT_TITLE);
         titleLbl.setForeground(Color.WHITE);
+        titleLbl.setIconTextGap(10);
 
-        JLabel courseLbl = new JLabel(exam.getCourseTitle() + " | Total Questions: " + questions.size() + " | Max Marks: " + exam.getTotalMarks());
+        JLabel courseLbl = new JLabel("SmartLearn India • " + exam.getCourseTitle() + " | Questions: " + questions.size() + " | Total Marks: " + exam.getTotalMarks());
         courseLbl.setFont(UITheme.FONT_BODY);
         courseLbl.setForeground(UITheme.SIDEBAR_TEXT);
         titleGrp.add(titleLbl);
         titleGrp.add(courseLbl);
 
-        timerLabel = new JLabel("⏱ 00:00", SwingConstants.RIGHT);
+        timerLabel = new JLabel("00:00", new VectorIcon(VectorIcon.Type.REFRESH, 18, UITheme.SAFFRON), SwingConstants.RIGHT);
+        timerLabel.setIconTextGap(8);
         timerLabel.setFont(new Font("Segoe UI", Font.BOLD, 22));
-        timerLabel.setForeground(UITheme.WARNING);
+        timerLabel.setForeground(UITheme.SAFFRON);
 
         headerPanel.add(titleGrp, BorderLayout.CENTER);
         headerPanel.add(timerLabel, BorderLayout.EAST);

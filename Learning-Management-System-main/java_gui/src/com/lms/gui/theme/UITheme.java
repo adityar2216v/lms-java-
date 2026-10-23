@@ -3,119 +3,83 @@ package com.lms.gui.theme;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.RoundRectangle2D;
 
+/**
+ * Modern, India-focused Design System for SmartLearn India.
+ * Implements the color palette: Deep Navy/Indigo, Royal Blue, Restrained Saffron, Soft Neutrals.
+ */
 public class UITheme {
-    // ── Primary Palette (Warm Indigo - approachable, not sterile) ──────────────
-    public static final Color PRIMARY = new Color(88, 80, 236);         // Vivid Indigo
-    public static final Color PRIMARY_DARK = new Color(72, 62, 210);    // Deep Indigo
-    public static final Color PRIMARY_LIGHT = new Color(237, 233, 254); // Indigo Tint
-    public static final Color PRIMARY_GLOW = new Color(129, 120, 248);  // Soft Indigo glow
-    public static final Color ACCENT = new Color(6, 182, 212);          // Teal 500
 
-    public static final Color SUCCESS = new Color(34, 197, 94);         // Green 500
-    public static final Color SUCCESS_DARK = new Color(22, 163, 74);
-    public static final Color SUCCESS_LIGHT = new Color(220, 252, 231);
+    // ── Primary Brand Palette (SmartLearn India) ──────────────────────────────
+    public static final Color PRIMARY = new Color(37, 99, 235);          // Royal Blue 600
+    public static final Color PRIMARY_DARK = new Color(29, 78, 216);     // Royal Blue 700
+    public static final Color PRIMARY_DEEP = new Color(30, 27, 75);      // Deep Indigo 950
+    public static final Color PRIMARY_LIGHT = new Color(239, 246, 255);  // Royal Blue 50
 
-    public static final Color DANGER = new Color(239, 68, 68);          // Red 500
+    // Indian Saffron Accents (Restrained, Modern, Elegant)
+    public static final Color SAFFRON = new Color(249, 115, 22);         // Saffron Orange 500 (#F97316)
+    public static final Color SAFFRON_DARK = new Color(194, 65, 12);     // Saffron 700
+    public static final Color SAFFRON_LIGHT = new Color(255, 247, 237);  // Saffron 50
+    public static final Color ACCENT = SAFFRON;
+    public static final Color ACCENT_LIGHT = SAFFRON_LIGHT;
+
+    // Semantic States
+    public static final Color SUCCESS = new Color(16, 185, 129);         // Emerald Green 500
+    public static final Color SUCCESS_DARK = new Color(5, 150, 105);
+    public static final Color SUCCESS_LIGHT = new Color(236, 253, 245);
+
+    public static final Color DANGER = new Color(239, 68, 68);           // Rose Red 500
     public static final Color DANGER_DARK = new Color(220, 38, 38);
-    public static final Color DANGER_LIGHT = new Color(254, 226, 226);
+    public static final Color DANGER_LIGHT = new Color(254, 242, 242);
 
-    public static final Color WARNING = new Color(234, 179, 8);         // Yellow 500
-    public static final Color WARNING_LIGHT = new Color(254, 249, 195);
+    public static final Color WARNING = new Color(245, 158, 11);         // Amber 500
+    public static final Color WARNING_LIGHT = new Color(255, 251, 235);
 
-    public static final Color INFO = new Color(59, 130, 246);           // Blue 500
+    public static final Color PURPLE = new Color(124, 58, 237);          // Violet 600
+    public static final Color PURPLE_LIGHT = new Color(245, 243, 255);
 
-    // ── Neutral Palette (Carefully balanced warmth) ───────────────────────────
-    public static final Color SIDEBAR_BG = new Color(17, 24, 39);       // Gray 900 (rich dark)
-    public static final Color SIDEBAR_HOVER = new Color(31, 41, 55);    // Gray 800
-    public static final Color SIDEBAR_ACTIVE = new Color(55, 48, 120);  // Subtle indigo undertone
-    public static final Color SIDEBAR_TEXT = new Color(156, 163, 175);  // Gray 400
-    public static final Color SIDEBAR_TEXT_ACTIVE = new Color(255, 255, 255);
+    // ── Slate & Navy Neutrals ──────────────────────────────────────────────────
+    public static final Color SIDEBAR_BG = new Color(15, 23, 42);        // Deep Slate 900
+    public static final Color SIDEBAR_HOVER = new Color(30, 41, 59);     // Slate 800
+    public static final Color SIDEBAR_ACTIVE = new Color(37, 99, 235);   // Royal Blue Active
+    public static final Color SIDEBAR_TEXT = new Color(148, 163, 184);   // Slate 400
+    public static final Color SIDEBAR_BORDER = new Color(30, 41, 59);
 
-    public static final Color APP_BG = new Color(245, 247, 250);        // Warm off-white
+    public static final Color APP_BG = new Color(248, 250, 252);         // Slate 50 Neutral
     public static final Color CARD_BG = Color.WHITE;
-    public static final Color BORDER = new Color(229, 231, 235);        // Gray 200
-    public static final Color DIVIDER = new Color(243, 244, 246);       // Gray 100
+    public static final Color BORDER = new Color(226, 232, 240);         // Slate 200
+    public static final Color BORDER_DARK = new Color(203, 213, 225);    // Slate 300
 
-    public static final Color TEXT_MAIN = new Color(17, 24, 39);        // Gray 900
-    public static final Color TEXT_SECONDARY = new Color(55, 65, 81);   // Gray 700
-    public static final Color TEXT_MUTED = new Color(107, 114, 128);    // Gray 500
-    public static final Color TEXT_LIGHT = new Color(156, 163, 175);    // Gray 400
+    public static final Color TEXT_MAIN = new Color(15, 23, 42);         // Slate 900
+    public static final Color TEXT_BODY = new Color(51, 65, 85);         // Slate 700
+    public static final Color TEXT_MUTED = new Color(100, 116, 139);     // Slate 500
+    public static final Color TEXT_LIGHT = new Color(148, 163, 184);     // Slate 400
 
-    // ── Shadow Colors ─────────────────────────────────────────────────────────
-    public static final Color SHADOW_LIGHT = new Color(0, 0, 0, 18);
-    public static final Color SHADOW_MEDIUM = new Color(0, 0, 0, 30);
-    public static final Color SHADOW_STRONG = new Color(0, 0, 0, 45);
-
-    // ── Typography (Consistent scale, warm fonts) ─────────────────────────────
-    public static final Font FONT_HERO = new Font("Segoe UI", Font.BOLD, 28);
-    public static final Font FONT_TITLE = new Font("Segoe UI", Font.BOLD, 21);
-    public static final Font FONT_SECTION = new Font("Segoe UI Semibold", Font.BOLD, 17);
+    // ── Typography ─────────────────────────────────────────────────────────────
+    public static final Font FONT_HERO = new Font("Segoe UI", Font.BOLD, 26);
+    public static final Font FONT_TITLE = new Font("Segoe UI", Font.BOLD, 20);
     public static final Font FONT_SUBTITLE = new Font("Segoe UI", Font.BOLD, 15);
     public static final Font FONT_BODY = new Font("Segoe UI", Font.PLAIN, 13);
     public static final Font FONT_BODY_BOLD = new Font("Segoe UI", Font.BOLD, 13);
     public static final Font FONT_SMALL = new Font("Segoe UI", Font.PLAIN, 11);
     public static final Font FONT_SMALL_BOLD = new Font("Segoe UI", Font.BOLD, 11);
-    public static final Font FONT_TINY = new Font("Segoe UI", Font.PLAIN, 10);
 
-    // ── Spacing ───────────────────────────────────────────────────────────────
-    public static final int SPACING_XS = 4;
-    public static final int SPACING_SM = 8;
-    public static final int SPACING_MD = 16;
-    public static final int SPACING_LG = 24;
-    public static final int SPACING_XL = 32;
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
+    // ── Anti-Aliasing Helpers ──────────────────────────────────────────────────
     public static void setupAntiAliasing(Graphics g) {
         if (g instanceof Graphics2D) {
             Graphics2D g2 = (Graphics2D) g;
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
             g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-            g2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-            g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
         }
     }
-
-    /** Draw a soft drop shadow behind a rounded rect */
-    public static void drawSoftShadow(Graphics2D g2, int x, int y, int w, int h, int radius, int layers) {
-        for (int i = layers; i > 0; i--) {
-            float alpha = 8f / (i * i + 4);
-            g2.setColor(new Color(0, 0, 0, Math.min(255, (int)(alpha * 255))));
-            g2.fill(new RoundRectangle2D.Float(
-                x - i, y + i, w + i * 2, h + i, radius + i, radius + i
-            ));
-        }
-    }
-
-    /** Lighten a color by a factor (0.0 to 1.0) */
-    public static Color lighten(Color c, float factor) {
-        int r = Math.min(255, (int)(c.getRed() + (255 - c.getRed()) * factor));
-        int g = Math.min(255, (int)(c.getGreen() + (255 - c.getGreen()) * factor));
-        int b = Math.min(255, (int)(c.getBlue() + (255 - c.getBlue()) * factor));
-        return new Color(r, g, b);
-    }
-
-    /** Darken a color by a factor (0.0 to 1.0) */
-    public static Color darken(Color c, float factor) {
-        int r = Math.max(0, (int)(c.getRed() * (1 - factor)));
-        int g = Math.max(0, (int)(c.getGreen() * (1 - factor)));
-        int b = Math.max(0, (int)(c.getBlue() * (1 - factor)));
-        return new Color(r, g, b);
-    }
-
-    /** Build a translucent version of a color */
-    public static Color withAlpha(Color c, int alpha) {
-        return new Color(c.getRed(), c.getGreen(), c.getBlue(), Math.max(0, Math.min(255, alpha)));
-    }
-
-    // ── Reusable Component Builders ──────────────────────────────────────────
 
     public static JPanel createHeader(String title, String subtitle) {
         JPanel p = new JPanel(new BorderLayout(5, 4));
         p.setOpaque(false);
-        p.setBorder(new EmptyBorder(20, 24, 16, 24));
+        p.setBorder(new EmptyBorder(14, 20, 12, 20));
 
         JLabel titleLbl = new JLabel(title);
         titleLbl.setFont(FONT_TITLE);
@@ -130,13 +94,39 @@ public class UITheme {
         return p;
     }
 
-    public static JPanel createStatCard(String label, String value, String iconText, Color accentColor) {
-        // Card with subtle shadow via RoundedPanel
-        RoundedPanel card = new RoundedPanel(14, CARD_BG);
-        card.setLayout(new BorderLayout(12, 8));
-        card.setBorder(new EmptyBorder(18, 20, 18, 20));
+    public static JPanel createSectionHeader(String title, String subtitle, JComponent actionComponent) {
+        JPanel p = new JPanel(new BorderLayout(10, 4));
+        p.setOpaque(false);
+        p.setBorder(new EmptyBorder(6, 4, 10, 4));
 
-        // Left side: Value + Label
+        JPanel titles = new JPanel(new GridLayout(2, 1, 2, 2));
+        titles.setOpaque(false);
+        JLabel titleLbl = new JLabel(title);
+        titleLbl.setFont(FONT_SUBTITLE);
+        titleLbl.setForeground(TEXT_MAIN);
+
+        JLabel subLbl = new JLabel(subtitle);
+        subLbl.setFont(FONT_SMALL);
+        subLbl.setForeground(TEXT_MUTED);
+        titles.add(titleLbl);
+        titles.add(subLbl);
+
+        p.add(titles, BorderLayout.WEST);
+        if (actionComponent != null) {
+            p.add(actionComponent, BorderLayout.EAST);
+        }
+        return p;
+    }
+
+    public static JPanel createStatCard(String label, String value, String iconText, Color accentColor) {
+        return createStatCard(label, value, iconText, accentColor, "Updated live");
+    }
+
+    public static JPanel createStatCard(String label, String value, String iconText, Color accentColor, String trendText) {
+        RoundedPanel card = new RoundedPanel(16, CARD_BG);
+        card.setLayout(new BorderLayout(12, 10));
+        card.setBorder(new EmptyBorder(16, 20, 16, 20));
+
         JPanel left = new JPanel();
         left.setLayout(new BoxLayout(left, BoxLayout.Y_AXIS));
         left.setOpaque(false);
@@ -146,61 +136,137 @@ public class UITheme {
         valLbl.setForeground(TEXT_MAIN);
 
         JLabel lblLbl = new JLabel(label);
-        lblLbl.setFont(FONT_SMALL);
+        lblLbl.setFont(FONT_BODY_BOLD);
         lblLbl.setForeground(TEXT_MUTED);
 
-        left.add(valLbl);
-        left.add(Box.createVerticalStrut(3));
-        left.add(lblLbl);
+        JLabel trendLbl = new JLabel(trendText != null ? trendText : "Updated live");
+        trendLbl.setFont(FONT_SMALL_BOLD);
+        trendLbl.setForeground(accentColor != null ? accentColor : PRIMARY);
 
-        // Right side: Icon with subtle colored background
-        JPanel iconHolder = new JPanel(new GridBagLayout()) {
+        left.add(valLbl);
+        left.add(Box.createVerticalStrut(2));
+        left.add(lblLbl);
+        left.add(Box.createVerticalStrut(4));
+        left.add(trendLbl);
+
+        // Right circular icon badge
+        JPanel iconCircle = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
-                UITheme.setupAntiAliasing(g);
-                Graphics2D g2 = (Graphics2D) g;
-                g2.setColor(withAlpha(accentColor, 22));
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
                 super.paintComponent(g);
+                setupAntiAliasing(g);
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setColor(new Color(accentColor.getRed(), accentColor.getGreen(), accentColor.getBlue(), 28));
+                g2.fill(new Ellipse2D.Float(2, 2, getWidth() - 4, getHeight() - 4));
             }
         };
-        iconHolder.setOpaque(false);
-        iconHolder.setPreferredSize(new Dimension(52, 52));
+        iconCircle.setLayout(new GridBagLayout());
+        iconCircle.setOpaque(false);
+        iconCircle.setPreferredSize(new Dimension(50, 50));
 
-        JLabel iconLbl = new JLabel(iconText, SwingConstants.CENTER);
-        iconLbl.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 24));
-        iconLbl.setForeground(accentColor);
-        iconHolder.add(iconLbl);
+        // Use vector icon if recognized, else fallback to text/symbol
+        JLabel iconLbl = createIconLabel(iconText, accentColor);
+        iconCircle.add(iconLbl);
 
         card.add(left, BorderLayout.CENTER);
-        card.add(iconHolder, BorderLayout.EAST);
+        card.add(iconCircle, BorderLayout.EAST);
         return card;
     }
 
-    /** Create a styled separator line */
-    public static JSeparator createSeparator() {
-        JSeparator sep = new JSeparator();
-        sep.setForeground(DIVIDER);
-        sep.setBackground(DIVIDER);
-        return sep;
+    private static JLabel createIconLabel(String iconText, Color color) {
+        VectorIcon.Type type = mapIconTextToType(iconText);
+        if (type != null) {
+            return new JLabel(new VectorIcon(type, 24, color));
+        }
+        JLabel lbl = new JLabel(iconText, SwingConstants.CENTER);
+        lbl.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 22));
+        lbl.setForeground(color);
+        return lbl;
     }
 
-    /** Create a badge label with colored background */
-    public static JLabel createBadge(String text, Color bgColor, Color fgColor) {
-        JLabel badge = new JLabel("  " + text + "  ") {
+    private static VectorIcon.Type mapIconTextToType(String text) {
+        if (text == null) return null;
+        switch (text.trim()) {
+            case "📚": return VectorIcon.Type.COURSES;
+            case "📈": return VectorIcon.Type.CHART;
+            case "📑": case "📋": return VectorIcon.Type.ASSIGNMENTS;
+            case "🎯": case "🏆": return VectorIcon.Type.EXAMS;
+            case "💡": case "❓": case "💬": return VectorIcon.Type.DOUBTS;
+            case "📢": return VectorIcon.Type.NOTICES;
+            case "👨‍🎓": case "👨‍🏫": case "👤": return VectorIcon.Type.USERS;
+            case "⏳": return VectorIcon.Type.REFRESH;
+            case "📅": return VectorIcon.Type.ATTENDANCE;
+            default: return null;
+        }
+    }
+
+    public static JComponent createStatusBadge(String text, Color bg, Color fg) {
+        JLabel badge = new JLabel(text, SwingConstants.CENTER) {
             @Override
             protected void paintComponent(Graphics g) {
-                UITheme.setupAntiAliasing(g);
+                setupAntiAliasing(g);
                 Graphics2D g2 = (Graphics2D) g;
-                g2.setColor(bgColor);
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
+                g2.setColor(bg);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
                 super.paintComponent(g);
             }
         };
-        badge.setFont(FONT_TINY);
-        badge.setForeground(fgColor);
+        badge.setFont(FONT_SMALL_BOLD);
+        badge.setForeground(fg);
+        badge.setBorder(new EmptyBorder(4, 10, 4, 10));
         badge.setOpaque(false);
-        badge.setBorder(new EmptyBorder(3, 8, 3, 8));
         return badge;
+    }
+
+    /**
+     * Generates a circular user avatar badge with user initials (e.g., "AS" for Aarav Sharma).
+     */
+    public static JComponent createAvatarBadge(String fullName, int size) {
+        String initials = extractInitials(fullName);
+        JPanel p = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                setupAntiAliasing(g);
+                Graphics2D g2 = (Graphics2D) g;
+
+                // Gradient circle background
+                GradientPaint grad = new GradientPaint(
+                        0, 0, PRIMARY,
+                        size, size, PRIMARY_DEEP
+                );
+                g2.setPaint(grad);
+                g2.fill(new Ellipse2D.Float(1, 1, size - 2, size - 2));
+
+                // Saffron accent ring
+                g2.setColor(SAFFRON);
+                g2.setStroke(new BasicStroke(1.5f));
+                g2.draw(new Ellipse2D.Float(1, 1, size - 2, size - 2));
+
+                // Initials text
+                g2.setColor(Color.WHITE);
+                g2.setFont(new Font("Segoe UI", Font.BOLD, Math.max(10, size / 2 - 2)));
+                FontMetrics fm = g2.getFontMetrics();
+                int x = (size - fm.stringWidth(initials)) / 2;
+                int y = (size - fm.getHeight()) / 2 + fm.getAscent();
+                g2.drawString(initials, x, y);
+            }
+        };
+        p.setPreferredSize(new Dimension(size, size));
+        p.setMaximumSize(new Dimension(size, size));
+        p.setOpaque(false);
+        return p;
+    }
+
+    private static String extractInitials(String name) {
+        if (name == null || name.trim().isEmpty()) return "IN";
+        String clean = name.replace("Dr.", "").replace("Prof.", "").replace("Mr.", "").replace("Ms.", "").trim();
+        String[] parts = clean.split("\\s+");
+        if (parts.length >= 2) {
+            return ("" + parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+        } else if (parts.length == 1 && parts[0].length() >= 2) {
+            return parts[0].substring(0, 2).toUpperCase();
+        }
+        return "IN";
     }
 }

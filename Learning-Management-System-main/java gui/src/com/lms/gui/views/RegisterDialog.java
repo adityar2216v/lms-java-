@@ -30,13 +30,13 @@ public class RegisterDialog extends JDialog {
         headerPanel.setBorder(new EmptyBorder(20, 24, 20, 24));
         headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
 
-        JLabel titleLbl = new JLabel("Join EduPro LMS Portal");
+        JLabel titleLbl = new JLabel("Join SmartLearn India");
         titleLbl.setFont(UITheme.FONT_TITLE);
         titleLbl.setForeground(Color.WHITE);
 
-        JLabel subLbl = new JLabel("Register as a Student or Faculty Member");
+        JLabel subLbl = new JLabel("Create an institutional Student or Faculty Account");
         subLbl.setFont(UITheme.FONT_BODY);
-        subLbl.setForeground(UITheme.SIDEBAR_TEXT);
+        subLbl.setForeground(UITheme.SAFFRON);
 
         headerPanel.add(titleLbl);
         headerPanel.add(Box.createVerticalStrut(4));
@@ -48,10 +48,10 @@ public class RegisterDialog extends JDialog {
         formPanel.setBorder(new EmptyBorder(20, 28, 20, 28));
         formPanel.setLayout(new GridLayout(6, 1, 10, 10));
 
-        nameField = new ModernTextField("Full Name (e.g. Jane Doe)", 20);
-        emailField = new ModernTextField("Email Address (e.g. user@example.com)", 20);
+        nameField = new ModernTextField("Full Name (e.g. Aarav Sharma)", 20);
+        emailField = new ModernTextField("Institutional Email (e.g. aarav@smartlearn.in)", 20);
         mobileField = new ModernTextField("Mobile Number (e.g. 9876543210)", 20);
-        passwordField = new ModernPasswordField("Password (min 4 characters)", 20);
+        passwordField = new ModernPasswordField("Account Password (min 4 characters)", 20);
 
         roleCombo = new JComboBox<>(new String[]{"STUDENT", "FACULTY"});
         roleCombo.setFont(UITheme.FONT_BODY);
@@ -60,9 +60,9 @@ public class RegisterDialog extends JDialog {
         deptCombo = new JComboBox<>(new String[]{
             "Computer Science & Engineering",
             "Information Technology",
-            "Data Science & AI",
+            "Artificial Intelligence & Data Science",
             "Software Engineering",
-            "Electronics & Communication"
+            "Electronics & Communication Engineering"
         });
         deptCombo.setFont(UITheme.FONT_BODY);
         deptCombo.setBackground(Color.WHITE);

@@ -5,9 +5,11 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 
 public class ModernTable extends JTable {
+    private TableRowSorter<DefaultTableModel> rowSorter;
 
     public ModernTable(DefaultTableModel model) {
         super(model);
@@ -20,17 +22,21 @@ public class ModernTable extends JTable {
         setRowHeight(42);
         setShowVerticalLines(false);
         setShowHorizontalLines(true);
-        setGridColor(new Color(243, 244, 246)); // Very light grid
-        setSelectionBackground(new Color(224, 231, 255)); // Indigo 100
+        setGridColor(UITheme.BORDER);
+        setSelectionBackground(UITheme.PRIMARY_LIGHT);
         setSelectionForeground(UITheme.PRIMARY_DARK);
         setIntercellSpacing(new Dimension(0, 1));
         setFillsViewportHeight(true);
-        setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
-        // Header Styling - sleek dark header with proper spacing
+        // Enable Row Sorter for instant searching & column sorting
+        DefaultTableModel model = (DefaultTableModel) getModel();
+        rowSorter = new TableRowSorter<>(model);
+        setRowSorter(rowSorter);
+
+        // Header Styling
         JTableHeader header = getTableHeader();
-        header.setFont(UITheme.FONT_SMALL_BOLD);
-        header.setBackground(new Color(31, 41, 55)); // Gray 800
+        header.setFont(UITheme.FONT_BODY_BOLD);
+        header.setBackground(UITheme.SIDEBAR_BG);
         header.setForeground(Color.WHITE);
         header.setPreferredSize(new Dimension(header.getWidth(), 44));
         header.setReorderingAllowed(false);
@@ -39,55 +45,61 @@ public class ModernTable extends JTable {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                lbl.setBackground(new Color(31, 41, 55));
-                lbl.setForeground(new Color(209, 213, 219)); // Gray 300
-                lbl.setFont(UITheme.FONT_SMALL_BOLD);
+                lbl.setBackground(UITheme.SIDEBAR_BG);
+                lbl.setForeground(Color.WHITE);
+                lbl.setFont(UITheme.FONT_BODY_BOLD);
                 lbl.setBorder(new EmptyBorder(8, 14, 8, 14));
-                lbl.setHorizontalAlignment(SwingConstants.LEFT);
                 return lbl;
             }
         };
         header.setDefaultRenderer(headerRenderer);
 
-        // Cell Renderer with alternating rows + status-aware coloring
+        // Custom Cell Renderer with Status Pills and Alternating Colors
         setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                lbl.setBorder(new EmptyBorder(8, 14, 8, 14));
+                lbl.setBorder(new EmptyBorder(6, 14, 6, 14));
 
-                String text = value != null ? value.toString() : "";
+                String strVal = value != null ? value.toString() : "";
 
                 if (isSelected) {
-                    lbl.setBackground(new Color(224, 231, 255));
+                    lbl.setBackground(UITheme.PRIMARY_LIGHT);
                     lbl.setForeground(UITheme.PRIMARY_DARK);
                     lbl.setFont(UITheme.FONT_BODY_BOLD);
                 } else {
-                    // Alternating row colors
-                    if (row % 2 == 0) {
-                        lbl.setBackground(Color.WHITE);
-                    } else {
-                        lbl.setBackground(new Color(249, 250, 251)); // Gray 50
-                    }
+                    lbl.setBackground(row % 2 == 0 ? Color.WHITE : new Color(248, 250, 252));
+                    lbl.setFont(UITheme.FONT_BODY);
 
-                    // Status-aware text colors
-                    if (text.contains("Active") || text.contains("Enrolled") || text.contains("Resolved") || text.contains("Graded") || text.contains("Passed")) {
+                    // Stylize status keywords
+                    if (strVal.contains("Active") || strVal.contains("Passed") || strVal.contains("Graded") || strVal.contains("Resolved")) {
                         lbl.setForeground(UITheme.SUCCESS_DARK);
                         lbl.setFont(UITheme.FONT_BODY_BOLD);
-                    } else if (text.contains("Inactive") || text.contains("Failed")) {
+                    } else if (strVal.contains("Inactive") || strVal.contains("Failed") || strVal.contains("Delete")) {
                         lbl.setForeground(UITheme.DANGER_DARK);
                         lbl.setFont(UITheme.FONT_BODY_BOLD);
-                    } else if (text.contains("Pending") || text.contains("Submitted")) {
-                        lbl.setForeground(new Color(180, 130, 0));
+                    } else if (strVal.contains("Submitted") || strVal.contains("Pending") || strVal.contains("Awaiting")) {
+                        lbl.setForeground(new Color(217, 119, 6)); // Amber 600
+                        lbl.setFont(UITheme.FONT_BODY_BOLD);
+                    } else if (strVal.contains("Pinned")) {
+                        lbl.setForeground(UITheme.PRIMARY);
                         lbl.setFont(UITheme.FONT_BODY_BOLD);
                     } else {
-                        lbl.setForeground(UITheme.TEXT_MAIN);
-                        lbl.setFont(UITheme.FONT_BODY);
+                        lbl.setForeground(UITheme.TEXT_BODY);
                     }
                 }
                 return lbl;
             }
         });
+    }
+
+    public void filter(String query) {
+        if (rowSorter == null) return;
+        if (query == null || query.trim().isEmpty()) {
+            rowSorter.setRowFilter(null);
+        } else {
+            rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + query.trim()));
+        }
     }
 
     @Override
@@ -97,9 +109,8 @@ public class ModernTable extends JTable {
 
     public static JScrollPane wrapInScrollPane(JTable table) {
         JScrollPane scrollPane = new JScrollPane(table);
-        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(229, 231, 235), 1));
+        scrollPane.setBorder(BorderFactory.createLineBorder(UITheme.BORDER, 1));
         scrollPane.getViewport().setBackground(Color.WHITE);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         return scrollPane;
     }
 }

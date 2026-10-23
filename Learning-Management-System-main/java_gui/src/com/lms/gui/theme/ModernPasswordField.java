@@ -5,12 +5,16 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.awt.geom.RoundRectangle2D;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class ModernPasswordField extends JPasswordField {
     private String placeholder = "";
     private boolean isFocused = false;
-    private int cornerRadius = 10;
+    private int cornerRadius = 8;
+    private boolean showPassword = false;
+    private char defaultEchoChar;
+    private boolean eyeHovered = false;
 
     public ModernPasswordField(int columns) {
         super(columns);
@@ -24,11 +28,13 @@ public class ModernPasswordField extends JPasswordField {
     }
 
     private void init() {
+        defaultEchoChar = getEchoChar();
         setFont(UITheme.FONT_BODY);
         setForeground(UITheme.TEXT_MAIN);
         setCaretColor(UITheme.PRIMARY);
         setOpaque(false);
-        setBorder(new EmptyBorder(11, 14, 11, 14));
+        // Leave room on right for the eye toggle icon
+        setBorder(new EmptyBorder(10, 14, 10, 36));
 
         addFocusListener(new FocusAdapter() {
             @Override
@@ -43,6 +49,53 @@ public class ModernPasswordField extends JPasswordField {
                 repaint();
             }
         });
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (isEyeArea(e.getX(), e.getY())) {
+                    togglePasswordVisibility();
+                }
+            }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                boolean over = isEyeArea(e.getX(), e.getY());
+                if (over != eyeHovered) {
+                    eyeHovered = over;
+                    setCursor(over ? Cursor.getPredefinedCursor(Cursor.HAND_CURSOR) : Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
+                    repaint();
+                }
+            }
+        });
+
+        addMouseMotionListener(new MouseAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                boolean over = isEyeArea(e.getX(), e.getY());
+                if (over != eyeHovered) {
+                    eyeHovered = over;
+                    setCursor(over ? Cursor.getPredefinedCursor(Cursor.HAND_CURSOR) : Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
+                    repaint();
+                }
+            }
+        });
+    }
+
+    private boolean isEyeArea(int x, int y) {
+        int right = getWidth() - 10;
+        int left = right - 22;
+        return x >= left && x <= right && y >= 8 && y <= getHeight() - 8;
+    }
+
+    public void togglePasswordVisibility() {
+        showPassword = !showPassword;
+        if (showPassword) {
+            setEchoChar((char) 0);
+        } else {
+            setEchoChar(defaultEchoChar);
+        }
+        repaint();
     }
 
     public void setPlaceholder(String placeholder) {
@@ -58,25 +111,19 @@ public class ModernPasswordField extends JPasswordField {
         int w = getWidth();
         int h = getHeight();
 
-        // Subtle focus glow
-        if (isFocused) {
-            g2.setColor(UITheme.withAlpha(UITheme.PRIMARY, 18));
-            g2.fill(new RoundRectangle2D.Float(-2, -2, w + 3, h + 3, cornerRadius + 4, cornerRadius + 4));
-        }
-
-        // Background fill
-        g2.setColor(isFocused ? Color.WHITE : new Color(249, 250, 251));
-        g2.fill(new RoundRectangle2D.Float(0, 0, w - 1, h - 1, cornerRadius, cornerRadius));
+        // Background
+        g2.setColor(Color.WHITE);
+        g2.fillRoundRect(0, 0, w - 1, h - 1, cornerRadius, cornerRadius);
 
         // Border
         if (isFocused) {
             g2.setColor(UITheme.PRIMARY);
-            g2.setStroke(new BasicStroke(1.6f));
+            g2.setStroke(new BasicStroke(1.8f));
         } else {
             g2.setColor(UITheme.BORDER);
             g2.setStroke(new BasicStroke(1.0f));
         }
-        g2.draw(new RoundRectangle2D.Float(0.5f, 0.5f, w - 2, h - 2, cornerRadius, cornerRadius));
+        g2.drawRoundRect(0, 0, w - 1, h - 1, cornerRadius, cornerRadius);
 
         super.paintComponent(g);
 
@@ -88,5 +135,17 @@ public class ModernPasswordField extends JPasswordField {
             int y = (h - fm.getHeight()) / 2 + fm.getAscent();
             g2.drawString(placeholder, 14, y);
         }
+
+        // Draw Eye Toggle Icon on the right
+        int eyeSize = 16;
+        int eyeX = w - eyeSize - 12;
+        int eyeY = (h - eyeSize) / 2;
+
+        VectorIcon eyeIcon = new VectorIcon(
+                showPassword ? VectorIcon.Type.EYE_OFF : VectorIcon.Type.EYE,
+                eyeSize,
+                eyeHovered ? UITheme.PRIMARY : UITheme.TEXT_MUTED
+        );
+        eyeIcon.paintIcon(this, g2, eyeX, eyeY);
     }
 }

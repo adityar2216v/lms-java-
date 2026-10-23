@@ -46,6 +46,8 @@ public class Notice implements Serializable {
     public LocalDate getPostDate() { return postDate; }
     public void setPostDate(LocalDate postDate) { this.postDate = postDate; }
 
+    public LocalDate getCreatedAt() { return postDate; }
+
     public boolean isPinned() { return pinned; }
     public void setPinned(boolean pinned) { this.pinned = pinned; }
 }

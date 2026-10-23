@@ -10,84 +10,88 @@ import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
+/**
+ * Modern, branded login gateway for SmartLearn India.
+ * Includes password visibility controls, 1-click viva evaluator demo buttons, and validation.
+ */
 public class LoginFrame extends JFrame {
     private final ModernTextField emailField;
     private final ModernPasswordField passwordField;
 
     public LoginFrame() {
-        super("EduPro LMS - University Academic Portal");
-        setSize(1020, 660);
-        setMinimumSize(new Dimension(920, 580));
+        super("SmartLearn India — Smart Learning Management System");
+        setIconImage(BrandLogo.createLogoImage(64));
+        setSize(1040, 680);
+        setMinimumSize(new Dimension(940, 600));
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // Split Main Panel: Left Showcase (45%), Right Login Form (55%)
+        // Split Main Panel: Left Showcase (46%), Right Login Form (54%)
         JPanel mainPanel = new JPanel(new GridLayout(1, 2));
 
         // ── Left Hero Panel ────────────────────────────────────────────────────
         JPanel leftHero = new JPanel();
         leftHero.setBackground(UITheme.SIDEBAR_BG);
         leftHero.setLayout(new BoxLayout(leftHero, BoxLayout.Y_AXIS));
-        leftHero.setBorder(new EmptyBorder(36, 36, 36, 36));
+        leftHero.setBorder(new EmptyBorder(32, 34, 32, 34));
 
-        // University Header
-        JLabel uniLbl = new JLabel("🏛️ EDUPRO UNIVERSITY");
-        uniLbl.setFont(UITheme.FONT_SMALL_BOLD);
-        uniLbl.setForeground(UITheme.ACCENT);
+        // Official SmartLearn India Brand Header
+        JPanel brandHeader = BrandLogo.createBrandHeader(true);
+        brandHeader.setAlignmentX(Component.LEFT_ALIGNMENT);
+        leftHero.add(brandHeader);
+        leftHero.add(Box.createVerticalStrut(20));
 
-        JLabel logoLbl = new JLabel("Academic LMS Portal");
-        logoLbl.setFont(new Font("Segoe UI", Font.BOLD, 26));
-        logoLbl.setForeground(Color.WHITE);
-
-        JLabel tagLbl = new JLabel("Curriculum, Online Examinations & Mentorship");
-        tagLbl.setFont(UITheme.FONT_BODY);
-        tagLbl.setForeground(UITheme.SIDEBAR_TEXT);
-
-        leftHero.add(uniLbl);
-        leftHero.add(Box.createVerticalStrut(4));
-        leftHero.add(logoLbl);
-        leftHero.add(Box.createVerticalStrut(2));
-        leftHero.add(tagLbl);
-        leftHero.add(Box.createVerticalStrut(22));
-
-        // Academic Features
-        leftHero.add(createFeatureItem("🎓 Role-Based Portals", "Custom tailored views for Students, Faculty & Administrators."));
-        leftHero.add(createFeatureItem("📚 Curriculum Hub", "Syllabus outlines, video lectures, downloadable notes & lesson progress."));
-        leftHero.add(createFeatureItem("📝 Homework & Rubric Grading", "Assignment submissions with instant feedback and marks."));
-        leftHero.add(createFeatureItem("⏱️ Timed MCQ Examinations", "Live countdown timer with question palette and auto-grading."));
-        leftHero.add(createFeatureItem("💬 Direct Doubt Resolution", "Direct student inquiry threads with instructor answer tracking."));
+        // Platform Highlights
+        leftHero.add(createFeatureItem("National Curriculum & Video Hub", "Syllabus outlines, structured lecture modules, and lesson progress.", VectorIcon.Type.COURSES));
+        leftHero.add(createFeatureItem("Assignments & Rubric Grading", "Continuous lab evaluations with numerical scores and faculty remarks.", VectorIcon.Type.ASSIGNMENTS));
+        leftHero.add(createFeatureItem("Timed MCQ Quizzes & Assessments", "Live countdown timer, question palette, and instant score reports.", VectorIcon.Type.EXAMS));
+        leftHero.add(createFeatureItem("Direct Doubt Resolution Forum", "Two-way mentorship threads between enrolled students and course faculty.", VectorIcon.Type.DOUBTS));
+        leftHero.add(createFeatureItem("AICTE Attendance & Verified Certificates", "Real-time 75% attendance criteria checks and authenticated certificates.", VectorIcon.Type.CERTIFICATE));
 
         leftHero.add(Box.createVerticalGlue());
 
-        // ── Quick Demo Switcher for Teachers & Evaluators ──────────────────────
+        // ── 1-Click Evaluator & Teacher Demo Panel ──────────────────────────────
         JPanel demoBox = new JPanel();
         demoBox.setLayout(new BoxLayout(demoBox, BoxLayout.Y_AXIS));
         demoBox.setOpaque(false);
+        demoBox.setAlignmentX(Component.LEFT_ALIGNMENT);
         demoBox.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UITheme.SIDEBAR_BORDER));
 
         JLabel quickLbl = new JLabel("⚡ Instant Demo Logins (Click to Auto-Fill):");
         quickLbl.setFont(UITheme.FONT_SMALL_BOLD);
-        quickLbl.setForeground(UITheme.WARNING);
+        quickLbl.setForeground(UITheme.SAFFRON);
 
-        demoBox.add(Box.createVerticalStrut(14));
+        demoBox.add(Box.createVerticalStrut(12));
         demoBox.add(quickLbl);
-        demoBox.add(Box.createVerticalStrut(10));
+        demoBox.add(Box.createVerticalStrut(8));
 
         JPanel quickGrid = new JPanel(new GridLayout(3, 1, 6, 8));
         quickGrid.setOpaque(false);
 
-        ModernButton demoAdminBtn = new ModernButton("👑 Master Admin (admin@lms.com)", ModernButton.Style.PRIMARY);
+        ModernButton demoAdminBtn = new ModernButton(
+                "Master Admin (admin@smartlearn.in)",
+                new VectorIcon(VectorIcon.Type.SHIELD, 14, Color.WHITE),
+                ModernButton.Style.PRIMARY
+        );
         demoAdminBtn.setFont(UITheme.FONT_SMALL_BOLD);
-        demoAdminBtn.addActionListener(e -> quickLogin("admin@lms.com", "admin123"));
+        demoAdminBtn.addActionListener(e -> quickLogin("admin@smartlearn.in", "admin123"));
 
-        ModernButton demoFacultyBtn = new ModernButton("👨‍🏫 Faculty: Dr. Smith (faculty@lms.com)", ModernButton.Style.SUCCESS);
+        ModernButton demoFacultyBtn = new ModernButton(
+                "Faculty: Dr. Neha Kapoor (neha.kapoor@smartlearn.in)",
+                new VectorIcon(VectorIcon.Type.USERS, 14, Color.WHITE),
+                ModernButton.Style.SUCCESS
+        );
         demoFacultyBtn.setFont(UITheme.FONT_SMALL_BOLD);
-        demoFacultyBtn.addActionListener(e -> quickLogin("faculty@lms.com", "faculty123"));
+        demoFacultyBtn.addActionListener(e -> quickLogin("neha.kapoor@smartlearn.in", "faculty123"));
 
-        ModernButton demoStudentBtn = new ModernButton("👨‍🎓 Student: Alex Johnson (student@lms.com)", ModernButton.Style.DARK);
+        ModernButton demoStudentBtn = new ModernButton(
+                "Student: Aarav Sharma (aarav.sharma@smartlearn.in)",
+                new VectorIcon(VectorIcon.Type.COURSES, 14, UITheme.TEXT_MAIN),
+                ModernButton.Style.SECONDARY
+        );
         demoStudentBtn.setFont(UITheme.FONT_SMALL_BOLD);
-        demoStudentBtn.addActionListener(e -> quickLogin("student@lms.com", "student123"));
+        demoStudentBtn.addActionListener(e -> quickLogin("aarav.sharma@smartlearn.in", "student123"));
 
         quickGrid.add(demoAdminBtn);
         quickGrid.add(demoFacultyBtn);
@@ -102,27 +106,28 @@ public class LoginFrame extends JFrame {
         rightPanel.setBackground(UITheme.APP_BG);
 
         RoundedPanel formCard = new RoundedPanel(20, Color.WHITE);
-        formCard.setPreferredSize(new Dimension(410, 500));
+        formCard.setPreferredSize(new Dimension(420, 520));
         formCard.setLayout(new BoxLayout(formCard, BoxLayout.Y_AXIS));
-        formCard.setBorder(new EmptyBorder(36, 36, 36, 36));
+        formCard.setBorder(new EmptyBorder(34, 36, 32, 36));
 
         JLabel welcomeLbl = new JLabel("Welcome Back");
         welcomeLbl.setFont(UITheme.FONT_HERO);
         welcomeLbl.setForeground(UITheme.TEXT_MAIN);
 
-        JLabel subWelcome = new JLabel("Sign in to your EduPro institutional account");
+        JLabel subWelcome = new JLabel("Sign in to your SmartLearn India institutional account");
         subWelcome.setFont(UITheme.FONT_BODY);
         subWelcome.setForeground(UITheme.TEXT_MUTED);
 
         formCard.add(welcomeLbl);
         formCard.add(Box.createVerticalStrut(4));
         formCard.add(subWelcome);
-        formCard.add(Box.createVerticalStrut(28));
+        formCard.add(Box.createVerticalStrut(24));
 
         emailField = new ModernTextField("Institutional Email Address", 20);
-        emailField.setText("admin@lms.com");
+        emailField.setText("aarav.sharma@smartlearn.in");
+
         passwordField = new ModernPasswordField("Account Password", 20);
-        passwordField.setText("admin123");
+        passwordField.setText("student123");
 
         // Submit on Enter key
         KeyAdapter enterSubmit = new KeyAdapter() {
@@ -138,10 +143,14 @@ public class LoginFrame extends JFrame {
 
         formCard.add(createFieldWrapper("Email Address:", emailField));
         formCard.add(Box.createVerticalStrut(14));
-        formCard.add(createFieldWrapper("Password:", passwordField));
-        formCard.add(Box.createVerticalStrut(26));
+        formCard.add(createFieldWrapper("Password (Click eye to view):", passwordField));
+        formCard.add(Box.createVerticalStrut(24));
 
-        ModernButton loginBtn = new ModernButton("🚀 Sign In to Portal", ModernButton.Style.PRIMARY);
+        ModernButton loginBtn = new ModernButton(
+                "Sign In to Portal",
+                new VectorIcon(VectorIcon.Type.LOGOUT, 16, Color.WHITE),
+                ModernButton.Style.PRIMARY
+        );
         loginBtn.setPreferredSize(new Dimension(340, 44));
         loginBtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
         loginBtn.addActionListener(e -> handleLogin());
@@ -172,7 +181,7 @@ public class LoginFrame extends JFrame {
 
         formCard.add(Box.createVerticalGlue());
 
-        JLabel statusFooter = new JLabel("🟢 System Online | Term: Fall 2026", SwingConstants.CENTER);
+        JLabel statusFooter = new JLabel("SmartLearn India | Academic Year 2026-27 | Odd Semester", SwingConstants.CENTER);
         statusFooter.setAlignmentX(Component.CENTER_ALIGNMENT);
         statusFooter.setFont(UITheme.FONT_SMALL);
         statusFooter.setForeground(UITheme.TEXT_LIGHT);
@@ -184,10 +193,16 @@ public class LoginFrame extends JFrame {
         add(mainPanel, BorderLayout.CENTER);
     }
 
-    private JPanel createFeatureItem(String title, String desc) {
-        JPanel p = new JPanel(new BorderLayout(8, 2));
+    private JPanel createFeatureItem(String title, String desc, VectorIcon.Type iconType) {
+        JPanel p = new JPanel(new BorderLayout(10, 2));
         p.setOpaque(false);
-        p.setBorder(new EmptyBorder(4, 0, 8, 0));
+        p.setAlignmentX(Component.LEFT_ALIGNMENT);
+        p.setBorder(new EmptyBorder(3, 0, 7, 0));
+
+        JLabel iconLbl = new JLabel(new VectorIcon(iconType, 16, UITheme.SAFFRON));
+
+        JPanel textGrp = new JPanel(new BorderLayout(2, 2));
+        textGrp.setOpaque(false);
 
         JLabel t = new JLabel(title);
         t.setFont(UITheme.FONT_BODY_BOLD);
@@ -197,8 +212,11 @@ public class LoginFrame extends JFrame {
         d.setFont(UITheme.FONT_SMALL);
         d.setForeground(UITheme.SIDEBAR_TEXT);
 
-        p.add(t, BorderLayout.NORTH);
-        p.add(d, BorderLayout.CENTER);
+        textGrp.add(t, BorderLayout.NORTH);
+        textGrp.add(d, BorderLayout.CENTER);
+
+        p.add(iconLbl, BorderLayout.WEST);
+        p.add(textGrp, BorderLayout.CENTER);
         return p;
     }
 
@@ -218,13 +236,13 @@ public class LoginFrame extends JFrame {
         String pass = new String(passwordField.getPassword()).trim();
 
         if (email.isEmpty() || pass.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please enter your email and password.", "Missing Credentials", JOptionPane.WARNING_MESSAGE);
+            Toast.show(this, "Please enter your email and password.", Toast.Type.WARNING);
             return;
         }
 
         User u = DataStore.getInstance().authenticate(email, pass);
         if (u == null) {
-            JOptionPane.showMessageDialog(this, "Invalid credentials. Please verify your email and password.", "Authentication Failed", JOptionPane.ERROR_MESSAGE);
+            Toast.show(this, "Invalid credentials. Verify your email and password.", Toast.Type.DANGER);
             return;
         }
 

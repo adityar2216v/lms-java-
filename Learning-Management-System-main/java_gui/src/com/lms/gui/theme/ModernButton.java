@@ -4,7 +4,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.RoundRectangle2D;
 
 public class ModernButton extends JButton {
     public enum Style {
@@ -20,6 +19,18 @@ public class ModernButton extends JButton {
         this(text, Style.PRIMARY);
     }
 
+    public ModernButton(String text, Icon icon) {
+        this(text, icon, Style.PRIMARY);
+    }
+
+    public ModernButton(String text, Icon icon, Style style) {
+        this(text, style);
+        if (icon != null) {
+            setIcon(icon);
+            setIconTextGap(8);
+        }
+    }
+
     public ModernButton(String text, Style style) {
         super(text);
         this.style = style;
@@ -29,7 +40,7 @@ public class ModernButton extends JButton {
         setContentAreaFilled(false);
         setOpaque(false);
         setCursor(new Cursor(Cursor.HAND_CURSOR));
-        setMargin(new Insets(10, 20, 10, 20));
+        setMargin(new Insets(10, 18, 10, 18));
 
         addMouseListener(new MouseAdapter() {
             @Override
@@ -41,7 +52,6 @@ public class ModernButton extends JButton {
             @Override
             public void mouseExited(MouseEvent e) {
                 isHovered = false;
-                isPressed = false;
                 repaint();
             }
 
@@ -73,48 +83,33 @@ public class ModernButton extends JButton {
         Color fg = getBaseFgColor();
 
         if (style == Style.OUTLINE) {
-            if (isPressed) {
-                bg = UITheme.PRIMARY_LIGHT;
-                fg = UITheme.PRIMARY_DARK;
-            } else if (isHovered) {
+            if (isHovered) {
                 bg = UITheme.PRIMARY_LIGHT;
                 fg = UITheme.PRIMARY;
             } else {
                 bg = Color.WHITE;
                 fg = UITheme.PRIMARY;
             }
-        } else if (style == Style.SECONDARY) {
-            if (isPressed) {
-                bg = UITheme.darken(bg, 0.12f);
-            } else if (isHovered) {
-                bg = UITheme.darken(bg, 0.05f);
-            }
         } else {
             if (isPressed) {
-                bg = UITheme.darken(bg, 0.18f);
+                bg = darken(bg, 0.2f);
             } else if (isHovered) {
-                bg = UITheme.lighten(bg, 0.12f);
+                bg = lighten(bg, 0.1f);
             }
         }
 
         int w = getWidth();
         int h = getHeight();
 
-        // Subtle shadow on hover for non-secondary buttons
-        if (isHovered && style != Style.SECONDARY && style != Style.OUTLINE) {
-            g2.setColor(UITheme.withAlpha(bg, 50));
-            g2.fill(new RoundRectangle2D.Float(1, 2, w - 2, h - 1, cornerRadius + 2, cornerRadius + 2));
-        }
-
-        // Background pill shape
+        // Background
         g2.setColor(bg);
-        g2.fill(new RoundRectangle2D.Float(0, 0, w, h, cornerRadius, cornerRadius));
+        g2.fillRoundRect(0, 0, w, h, cornerRadius, cornerRadius);
 
         // Border for outline style
         if (style == Style.OUTLINE) {
             g2.setColor(UITheme.PRIMARY);
-            g2.setStroke(new BasicStroke(1.4f));
-            g2.draw(new RoundRectangle2D.Float(1, 1, w - 2, h - 2, cornerRadius, cornerRadius));
+            g2.setStroke(new BasicStroke(1.5f));
+            g2.drawRoundRect(1, 1, w - 2, h - 2, cornerRadius, cornerRadius);
         }
 
         // Draw text and icon
@@ -124,14 +119,14 @@ public class ModernButton extends JButton {
 
     private Color getBaseBgColor() {
         switch (style) {
-            case PRIMARY:   return UITheme.PRIMARY;
-            case SUCCESS:   return UITheme.SUCCESS;
-            case DANGER:    return UITheme.DANGER;
-            case WARNING:   return UITheme.WARNING;
+            case PRIMARY: return UITheme.PRIMARY;
+            case SUCCESS: return UITheme.SUCCESS;
+            case DANGER: return UITheme.DANGER;
+            case WARNING: return UITheme.WARNING;
             case SECONDARY: return new Color(241, 245, 249);
-            case DARK:      return UITheme.SIDEBAR_BG;
-            case OUTLINE:   return Color.WHITE;
-            default:        return UITheme.PRIMARY;
+            case DARK: return UITheme.SIDEBAR_BG;
+            case OUTLINE: return Color.WHITE;
+            default: return UITheme.PRIMARY;
         }
     }
 
@@ -139,5 +134,19 @@ public class ModernButton extends JButton {
         if (style == Style.SECONDARY) return UITheme.TEXT_MAIN;
         if (style == Style.OUTLINE) return UITheme.PRIMARY;
         return Color.WHITE;
+    }
+
+    private Color lighten(Color c, float factor) {
+        int r = Math.min(255, (int) (c.getRed() + (255 - c.getRed()) * factor));
+        int g = Math.min(255, (int) (c.getGreen() + (255 - c.getGreen()) * factor));
+        int b = Math.min(255, (int) (c.getBlue() + (255 - c.getBlue()) * factor));
+        return new Color(r, g, b);
+    }
+
+    private Color darken(Color c, float factor) {
+        int r = Math.max(0, (int) (c.getRed() * (1 - factor)));
+        int g = Math.max(0, (int) (c.getGreen() * (1 - factor)));
+        int b = Math.max(0, (int) (c.getBlue() * (1 - factor)));
+        return new Color(r, g, b);
     }
 }
